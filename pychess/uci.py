@@ -6,13 +6,13 @@ class UCIQuitException(Exception):
 
 
 class UCI:
-    def isready(self):
+    def isready(self, command=None):
         return ["readyok"]
 
-    def quit(self):
+    def quit(self, command=None):
         raise UCIQuitException
 
-    def uci(self):
+    def uci(self, command=None):
         return [
             f"id name {pychess.__name__} {pychess.__version__} ",
             f"id author {pychess.__author__}",
@@ -25,8 +25,11 @@ class UCI:
             "quit": self.quit,
             "uci": self.uci,
         }
-        method = method_map[command]
-        return method()
+        method = method_map.get(command, self.unknown_command)
+        return method(command)
+
+    def unknown_command(self, command):
+        return [f"Unknown command: {command}"]
 
     def run(self):
         while True:
