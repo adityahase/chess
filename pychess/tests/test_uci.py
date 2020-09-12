@@ -29,6 +29,10 @@ class TestUCI(unittest.TestCase):
         self.assertIn("Unknown command", unknown_command[0])
         self.assertIn("randomcommand", unknown_command[0])
 
+    def test_ucinewgame(self):
+        ucinewgame = self.uci.ucinewgame()
+        self.assertEqual(ucinewgame, None)
+
 
 if __name__ == "__main__":
     unittest.main()

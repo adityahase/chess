@@ -19,11 +19,15 @@ class UCI:
             "uciok",
         ]
 
+    def ucinewgame(self, command=None):
+        pass
+
     def process_command(self, command):
         method_map = {
             "isready": self.isready,
             "quit": self.quit,
             "uci": self.uci,
+            "ucinewgame": self.ucinewgame,
         }
         method = method_map.get(command, self.unknown_command)
         return method(command)
