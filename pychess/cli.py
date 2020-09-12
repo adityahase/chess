@@ -1,6 +1,9 @@
 import click
 
+from pychess.uci import UCI
+
 
 @click.command()
 def cli():
-    print("Hello, World")
+    uci = UCI()
+    uci.run()
