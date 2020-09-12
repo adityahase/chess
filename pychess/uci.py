@@ -1,9 +1,16 @@
 import pychess
 
 
+class UCIQuitException(Exception):
+    pass
+
+
 class UCI:
     def isready(self):
         return ["readyok"]
+
+    def quit(self):
+        raise UCIQuitException
 
     def uci(self):
         return [
@@ -15,6 +22,7 @@ class UCI:
     def process_command(self, command):
         method_map = {
             "isready": self.isready,
+            "quit": self.quit,
             "uci": self.uci,
         }
         method = method_map[command]
@@ -23,7 +31,10 @@ class UCI:
     def run(self):
         while True:
             command = input()
-            result = self.process_command(command)
+            try:
+                result = self.process_command(command)
+            except UCIQuitException:
+                break
             if isinstance(result, list):
                 for line in result:
                     print(line)

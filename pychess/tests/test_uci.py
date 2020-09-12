@@ -1,6 +1,6 @@
 import unittest
 import pychess
-from pychess.uci import UCI
+from pychess.uci import UCI, UCIQuitException
 
 
 class TestUCI(unittest.TestCase):
@@ -20,6 +20,9 @@ class TestUCI(unittest.TestCase):
         self.assertEqual(len(readyok), 1)
         self.assertEqual("readyok", readyok[0])
 
+    def test_quit(self):
+        uci = UCI()
+        self.assertRaises(UCIQuitException, uci.quit)
 
 
 if __name__ == "__main__":
