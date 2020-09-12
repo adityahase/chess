@@ -1,4 +1,4 @@
-COLORS = [True, False]
+COLORS = [WHITE, BLACK] = [True, False]
 PIECE_SYMBOLS = [None, "p", "n", "b", "r", "q", "k"]
 
 
@@ -114,40 +114,43 @@ class Board:
 
     @property
     def turn_fen(self):
-        return ""
+        return "w" if self.turn else "b"
 
     @turn_fen.setter
     def turn_fen(self, turn_fen):
-        return ""
+        if turn_fen == "w":
+            self.turn = WHITE
+        else:
+            self.turn = BLACK
 
     @property
     def castling_fen(self):
-        return ""
+        return self.castling
 
     @castling_fen.setter
     def castling_fen(self, castling_fen):
-        return ""
+        self.castling = castling_fen
 
     @property
     def en_passant_fen(self):
-        return ""
+        return self.en_passant
 
     @en_passant_fen.setter
     def en_passant_fen(self, en_passant_fen):
-        return ""
+        self.en_passant = en_passant_fen
 
     @property
     def half_move_fen(self):
-        return ""
+        return str(self.half_move_clock)
 
     @half_move_fen.setter
     def half_move_fen(self, half_move_fen):
-        return ""
+        self.half_move_clock = int(half_move_fen)
 
     @property
     def full_move_fen(self):
-        return ""
+        return str(self.full_move_number)
 
     @full_move_fen.setter
     def full_move_fen(self, full_move_fen):
-        return ""
+        self.full_move_number = int(full_move_fen)
