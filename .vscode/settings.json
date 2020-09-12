@@ -1,0 +1,9 @@
+{
+    "editor.formatOnSave": true,
+    "python.pythonPath": "env/bin/python",
+    "python.formatting.blackArgs": [
+        "--line-length",
+        "79"
+    ],
+    "python.linting.flake8Enabled": true
+}
