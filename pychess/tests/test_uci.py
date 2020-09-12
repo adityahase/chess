@@ -4,9 +4,11 @@ from pychess.uci import UCI, UCIQuitException
 
 
 class TestUCI(unittest.TestCase):
+    def setUp(self):
+        self.uci = UCI()
+
     def test_uci(self):
-        uci = UCI()
-        uciok = uci.uci()
+        uciok = self.uci.uci()
         self.assertEqual(len(uciok), 3)
         self.assertIn(pychess.__name__, uciok[0])
         self.assertIn(pychess.__version__, uciok[0])
@@ -14,15 +16,12 @@ class TestUCI(unittest.TestCase):
         self.assertEqual("uciok", uciok[2])
 
     def test_isready(self):
-        uci = UCI()
-        uci.uci()
-        readyok = uci.isready()
+        readyok = self.uci.isready()
         self.assertEqual(len(readyok), 1)
         self.assertEqual("readyok", readyok[0])
 
     def test_quit(self):
-        uci = UCI()
-        self.assertRaises(UCIQuitException, uci.quit)
+        self.assertRaises(UCIQuitException, self.uci.quit)
 
 
 if __name__ == "__main__":
