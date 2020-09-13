@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, render_template
 from flask.json import jsonify
 
 import chess
@@ -8,9 +8,12 @@ app = Flask(__name__)
 
 STOCKFISH = "stockfish"
 
+@app.route("/", methods=["GET"])
+def index():
+    return render_template("index.html")
 
-@app.route("/", methods=["POST"])
-def play():
+@app.route("/play", methods=["POST"])
+def play(): 
     data = request.get_json(force=True)
     engine = SimpleEngine.popen_uci(STOCKFISH)
     board = chess.Board(data["fen"])
