@@ -198,7 +198,6 @@ class Board:
     def moves(self):
         """Generate all possible moves from this position"""
         yield from self._pawn_moves()
-        yield from self._piece_moves()
 
     def scan(self, bitboard):
         while bitboard:

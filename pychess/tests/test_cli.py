@@ -1,8 +1,7 @@
 import unittest
 
-from chess.engine import SimpleEngine
-
 import pychess
+from chess.engine import SimpleEngine
 
 
 class TestCLI(unittest.TestCase):
