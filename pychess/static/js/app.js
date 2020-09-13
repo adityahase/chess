@@ -84,11 +84,17 @@ window.onload = function () {
     $.ajax({
       type: "POST",
       url: "/play",
-      data: `{ "fen": "${Chessboard.objToFen(board_position)}" }`,
+      data: `{ "fen": "${game.fen()}" }`,
       success: function (data) {
         ai_move = data.bestmove;
-        ai_move = ai_move.slice(0, 2) + "-" + ai_move.slice(2);
+        var from = ai_move.slice(0, 2)
+        var to = ai_move.slice(2);
+        ai_move = from + "-" + to;
         board.move(ai_move);
+        game.move({
+          from,
+          to
+        });
         add_move_to_list(player_move, ai_move);
       },
       contentType: "application/json",
@@ -103,8 +109,9 @@ window.onload = function () {
       <p class="flex-1">${ai_move}</p>
     </div>`
     );
-    $("#moves-container").animate(
-      { scrollTop: $("#moves-container").prop("scrollHeight") },
+    $("#moves-container").animate({
+        scrollTop: $("#moves-container").prop("scrollHeight")
+      },
       500
     );
   }
