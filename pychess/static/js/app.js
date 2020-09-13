@@ -37,7 +37,7 @@ window.onload = function () {
   }
 
   function updateStatus() {
-    var status = "";
+    var status = "Make your move!";
     var moveColor = "White";
     if (game.turn() === "b") {
       moveColor = "Black";
@@ -52,7 +52,6 @@ window.onload = function () {
     }
     // game still on
     else {
-      status = moveColor + " to move";
       // check?
       if (game.in_check()) {
         status += ", " + moveColor + " is in check";
@@ -87,13 +86,13 @@ window.onload = function () {
       data: `{ "fen": "${game.fen()}" }`,
       success: function (data) {
         ai_move = data.bestmove;
-        var from = ai_move.slice(0, 2)
+        var from = ai_move.slice(0, 2);
         var to = ai_move.slice(2);
         ai_move = from + "-" + to;
         board.move(ai_move);
         game.move({
           from,
-          to
+          to,
         });
         add_move_to_list(player_move, ai_move);
       },
@@ -109,8 +108,9 @@ window.onload = function () {
       <p class="flex-1">${ai_move}</p>
     </div>`
     );
-    $("#moves-container").animate({
-        scrollTop: $("#moves-container").prop("scrollHeight")
+    $("#moves-container").animate(
+      {
+        scrollTop: $("#moves-container").prop("scrollHeight"),
       },
       500
     );
