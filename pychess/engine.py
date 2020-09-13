@@ -67,6 +67,21 @@ class Piece:
         return str(self.symbol)
 
 
+class Move:
+    def __init__(self, from_square=None, to_square=None):
+        self.from_square = from_square
+        self.to_square = to_square
+
+    def uci(self):
+        return SQUARE_NAMES[self.from_square] + SQUARE_NAMES[self.to_square]
+
+    def __str__(self):
+        return self.uci()
+
+    def __repr__(self):
+        return self.__str__()
+
+
 class Board:
     STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
     STARTING_BOARD_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
@@ -179,6 +194,46 @@ class Board:
         self.en_passant_fen = en_passant
         self.half_move_fen = half_move
         self.full_move_fen = full_move
+
+    def moves(self):
+        """Generate all possible moves from this position"""
+        yield from self._pawn_moves()
+        yield from self._piece_moves()
+
+    def scan(self, bitboard):
+        while bitboard:
+            square = bitboard.bit_length() - 1
+            yield square
+            bitboard ^= B_SQUARES[square]
+
+    def _pawn_moves(self):
+        pawns = self.pawns & self.occupied_color[self.turn]
+        # If we don't have any pawns, just skip.
+        if not pawns:
+            return
+
+        # Figure out where the pawns would jump after the move (to_square)
+        # Shift squares to find out from_square
+        # We can't walk over any piece
+        # Double move can only be performed in following cases
+        # from 2nd to 4th Rank (white) and
+        # from 7th to 5th rank (Black)
+        if self.turn:
+            single_advance = (pawns << 8) & (~self.occupied)
+            double_advance = (pawns << 16) & (~self.occupied) & B_RANK_4
+            single_reverse_step, double_reverse_step = -8, -16
+        else:
+            single_advance = (pawns >> 8) & (~self.occupied)
+            double_advance = (pawns >> 16) & (~self.occupied) & B_RANK_5
+            single_reverse_step, double_reverse_step = 8, 16
+
+        for to_square in self.scan(single_advance):
+            from_square = to_square + single_reverse_step
+            yield Move(from_square, to_square)
+
+        for to_square in self.scan(double_advance):
+            from_square = to_square + double_reverse_step
+            yield Move(from_square, to_square)
 
     @property
     def board_fen(self):
