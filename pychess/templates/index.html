@@ -10,6 +10,7 @@
     />
     <link rel="stylesheet" href="static/css/chessboard-1.0.0.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="static/js/chess.js"></script>
     <script src="static/js/chessboard-1.0.0.min.js"></script>
     <script src="static/js/app.js"></script>
   </head>
@@ -34,7 +35,7 @@
           </div>
           <input
             id="fen-input"
-            class="flex-1 px-4 mr-2 text-sm rounded shadow border text-gray-800"
+            class="flex-1 px-4 mr-2 text-sm rounded shadow border text-gray-700"
             placeholder="Enter FEN String"
           />
           <div
@@ -45,6 +46,13 @@
           </div>
         </div>
         <div id="chess-board" style="width: 600px; height: 600px"></div>
+        <div
+          id="game-status"
+          class="font-bold bg-blue-100 border border-blue-400 text-blue-700 px-4 py-1 mt-4 text-sm rounded relative"
+          role="alert"
+        >
+          Make your move!
+        </div>
       </div>
       <div
         id="move-list"
