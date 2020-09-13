@@ -17,6 +17,16 @@ class TestBoard(unittest.TestCase):
         board = Board(FEN)
         self.assertEqual(board.fen, FEN)
 
+    def test_init_en_passant_fen(self):
+        FEN = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
+        board = Board(FEN)
+        self.assertEqual(board.fen, FEN)
+
+    def test_init_en_passant_fen_2(self):
+        FEN = "rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2"
+        board = Board(FEN)
+        self.assertEqual(board.fen, FEN)
+
 
 if __name__ == "__main__":
     unittest.main()

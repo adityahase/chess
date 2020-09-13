@@ -1,16 +1,64 @@
 COLORS = [WHITE, BLACK] = [True, False]
+
 PIECE_SYMBOLS = [None, "p", "n", "b", "r", "q", "k"]
+PIECE_TYPES = [PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING] = list(range(1, 7))
+
+SQUARES = list(range(64))
+
+FILE_NAMES = ["a", "b", "c", "d", "e", "f", "g", "h"]
+RANK_NAMES = ["1", "2", "3", "4", "5", "6", "7", "8"]
+SQUARE_NAMES = [file + rank for rank in RANK_NAMES for file in FILE_NAMES]
+
+
+def square_mirror(square):
+    """Mirror the square vertically"""
+    # https://www.chessprogramming.org/Flipping_Mirroring_and_Rotating
+    # This works because 56 = 0b111000, Rest is trivial
+    return square ^ 56
+
+
+SQUARES_MIRRORED = [square_mirror(sq) for sq in SQUARES]
+
+B_EMPTY = 0
+B_SQUARES = [1 << square for square in SQUARES]
+B_FILES = [
+    B_FILE_A,
+    B_FILE_B,
+    B_FILE_C,
+    B_FILE_D,
+    B_FILE_E,
+    B_FILE_F,
+    B_FILE_G,
+    B_FILE_H,
+] = [0x0101010101010101 << i for i in range(8)]
+
+B_RANKS = [
+    B_RANK_1,
+    B_RANK_2,
+    B_RANK_3,
+    B_RANK_4,
+    B_RANK_5,
+    B_RANK_6,
+    B_RANK_7,
+    B_RANK_8,
+] = [0xFF << (8 * i) for i in range(8)]
 
 
 class Piece:
-    def __init__(self, symbol):
-        self.type = PIECE_SYMBOLS.index(symbol.lower())
-        self.color = symbol.isupper()
+    def __init__(self, type, color):
+        self.type = type
+        self.color = color
 
     @property
     def symbol(self):
         symbol = PIECE_SYMBOLS[self.type]
         return symbol.upper() if self.color else symbol
+
+    @classmethod
+    def from_symbol(cls, symbol):
+        type = PIECE_SYMBOLS.index(symbol.lower())
+        color = symbol.isupper()
+        return cls(type, color)
 
     def __str__(self):
         return self.symbol
@@ -38,6 +86,71 @@ class Board:
     def __repr__(self):
         return str(self.__str__())
 
+    def clear(self):
+        self.pawns = B_EMPTY
+        self.knights = B_EMPTY
+        self.bishops = B_EMPTY
+        self.rooks = B_EMPTY
+        self.queens = B_EMPTY
+        self.kings = B_EMPTY
+        self.castling = B_EMPTY
+
+        self.occupied = B_EMPTY
+        self.occupied_color = [B_EMPTY, B_EMPTY]
+
+    def set_piece_on(self, piece, square):
+        type, color = piece.type, piece.color
+        square_mask = B_SQUARES[square]
+        if type == PAWN:
+            self.pawns |= square_mask
+        elif type == KNIGHT:
+            self.knights |= square_mask
+        elif type == BISHOP:
+            self.bishops |= square_mask
+        elif type == ROOK:
+            self.rooks |= square_mask
+        elif type == QUEEN:
+            self.queens |= square_mask
+        elif type == KING:
+            self.kings |= square_mask
+
+        self.occupied |= square_mask
+        self.occupied_color[color] |= square_mask
+
+    def piece_on(self, square):
+        type = self._type_on(square)
+        if type:
+            color = self._color_on(square)
+            return Piece(type, color)
+        else:
+            return None
+
+    def _type_on(self, square):
+        square_mask = B_SQUARES[square]
+        if not self.occupied & square_mask:
+            return None
+        elif self.pawns & square_mask:
+            return PAWN
+        elif self.knights & square_mask:
+            return KNIGHT
+        elif self.bishops & square_mask:
+            return BISHOP
+        elif self.rooks & square_mask:
+            return ROOK
+        elif self.queens & square_mask:
+            return QUEEN
+        else:
+            return KING
+
+    def _color_on(self, square):
+        square_mask = B_SQUARES[square]
+        if self.occupied_color[WHITE] & square_mask:
+            return WHITE
+        elif self.occupied_color[BLACK] & square_mask:
+            return BLACK
+        else:
+            return None
+
     @property
     def fen(self):
         return " ".join(
@@ -58,6 +171,7 @@ class Board:
         # "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
         # https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
         # https://ia802908.us.archive.org/26/items/pgn-standard-1994-03-12/PGN_standard_1994-03-12.txt
+        self.clear()
         board, turn, castling, en_passant, half_move, full_move = value.split()
         self.board_fen = board
         self.turn_fen = turn
@@ -68,26 +182,25 @@ class Board:
 
     @property
     def board_fen(self):
-        def _encode_fen_rank(rank):
-            encoded = []
-            for square in rank:
-                if square == " ":
-                    if encoded and encoded[-1].isdigit():
-                        encoded[-1] = str(int(encoded[-1]) + 1)
-                    else:
-                        encoded.append("1")
-                else:
-                    encoded.append(square)
-            return encoded
+        rank_fens, rank_squares, blank = [], [], 0
+        for square in SQUARES_MIRRORED:
+            piece = self.piece_on(square)
+            if not piece:
+                blank += 1
+            else:
+                if blank:
+                    rank_squares.append(str(blank))
+                    blank = 0
 
-        rank_fens = []
-        for rank in self.board:
-            square_fens = []
-            for square in rank:
-                square_fen = str(square or " ")
-                square_fens.append(square_fen)
-            rank_fen = "".join(_encode_fen_rank(square_fens))
-            rank_fens.append(rank_fen)
+                rank_squares.append(piece.symbol)
+
+            if B_SQUARES[square] & B_FILE_H:
+                if blank:
+                    rank_squares.append(str(blank))
+                    blank = 0
+                rank_fens.append("".join(rank_squares))
+                rank_squares = []
+
         return "/".join(rank_fens)
 
     @board_fen.setter
@@ -102,15 +215,12 @@ class Board:
             return decoded
 
         self.board = []
-        for fen_rank in board_fen.split("/"):
-            rank = []
-            for fen_square in _decode_fen_rank(fen_rank):
+        for ii, fen_rank in enumerate(board_fen.split("/")):
+            for jj, fen_square in enumerate(_decode_fen_rank(fen_rank)):
                 if fen_square:
-                    piece = Piece(fen_square)
-                else:
-                    piece = None
-                rank.append(piece)
-            self.board.append(rank)
+                    piece = Piece.from_symbol(fen_square)
+                    square = SQUARES_MIRRORED[ii * 8 + jj]
+                    self.set_piece_on(piece, square)
 
     @property
     def turn_fen(self):
@@ -125,19 +235,50 @@ class Board:
 
     @property
     def castling_fen(self):
-        return self.castling
+        flags = []
+
+        for color in COLORS:
+            backrank = B_RANK_1 if color else B_RANK_8
+
+            for file, flag in ((B_FILE_H, "k"), (B_FILE_A, "q")):
+                if self.castling & backrank & file:
+                    flags.append(flag.upper() if color else flag)
+
+        if flags:
+            return "".join(flags)
+        else:
+            return "-"
 
     @castling_fen.setter
     def castling_fen(self, castling_fen):
-        self.castling = castling_fen
+        self.castling = B_EMPTY
+        if castling_fen == "-":
+            return
+
+        for flag in castling_fen:
+            color = flag.isupper()
+            flag = flag.lower()
+            backrank = B_RANK_1 if color else B_RANK_8
+
+            if flag == "q":
+                # Queen rook, A file
+                self.castling |= B_FILE_A & backrank
+            elif flag == "k":
+                # King rook, H File
+                self.castling |= B_FILE_H & backrank
 
     @property
     def en_passant_fen(self):
-        return self.en_passant
+        if self.en_passant is None:
+            return "-"
+        return SQUARE_NAMES[self.en_passant]
 
     @en_passant_fen.setter
     def en_passant_fen(self, en_passant_fen):
-        self.en_passant = en_passant_fen
+        if en_passant_fen == "-":
+            self.en_passant = None
+        else:
+            self.en_passant = SQUARE_NAMES.index(en_passant_fen)
 
     @property
     def half_move_fen(self):
