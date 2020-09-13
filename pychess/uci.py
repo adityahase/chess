@@ -25,8 +25,10 @@ class UCI:
         tokens = command.split()
         if len(tokens) == 2:
             _, fen = tokens
-        else:
+        elif "moves" in command:
             _, fen, _, *moves = tokens
+        elif "fen" in command:
+            _, __, fen = command.split(maxsplit=2)
         self.engine = Engine(fen, moves)
 
     def go(self, command=None):
