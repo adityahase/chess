@@ -1,4 +1,5 @@
 import pychess
+from pychess.engine import Engine
 
 
 class UCIQuitException(Exception):
@@ -19,8 +20,20 @@ class UCI:
             "uciok",
         ]
 
+    def position(self, command=None):
+        fen, moves = None, []
+        tokens = command.split()
+        if len(tokens) == 2:
+            _, fen = tokens
+        else:
+            _, fen, _, *moves = tokens
+        self.engine = Engine(fen, moves)
+
+    def go(self, command=None):
+        return [f"bestmove {self.engine.go()}"]
+
     def ucinewgame(self, command=None):
-        pass
+        self.engine = Engine(None, None)
 
     def process_command(self, command):
         method_map = {
@@ -28,8 +41,10 @@ class UCI:
             "quit": self.quit,
             "uci": self.uci,
             "ucinewgame": self.ucinewgame,
+            "position": self.position,
+            "go": self.go,
         }
-        method = method_map.get(command, self.unknown_command)
+        method = method_map.get(command.split()[0], self.unknown_command)
         return method(command)
 
     def unknown_command(self, command):
