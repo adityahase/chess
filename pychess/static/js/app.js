@@ -1,6 +1,7 @@
 window.onload = function () {
   const game = new Chess();
   window.game = game;
+  let player_move;
 
   function onDragStart(source, piece, position, orientation) {
     // do not pick up pieces if the game is over
@@ -15,7 +16,7 @@ window.onload = function () {
     }
   }
 
-  function onDrop(source, target) {
+  function onDrop(source, target, piece, newPos, oldPos, orientation) {
     // see if the move is legal
     var move = game.move({
       from: source,
@@ -26,9 +27,9 @@ window.onload = function () {
     // illegal move
     if (move === null) return "snapback";
 
-    const player_move = `${source}-${target}`;
+    player_move = `${source}-${target}`;
     updateStatus();
-    fetch_ai_move(player_move);
+    fetch_ai_move(newPos);
   }
 
   function onSnapEnd() {
@@ -79,11 +80,11 @@ window.onload = function () {
     board.position(fen_string);
   });
 
-  function fetch_ai_move(player_move) {
+  function fetch_ai_move(board_position) {
     $.ajax({
       type: "POST",
       url: "/play",
-      data: `{ "fen": "${board.fen()}" }`,
+      data: `{ "fen": "${Chessboard.objToFen(board_position)}" }`,
       success: function (data) {
         ai_move = data.bestmove;
         ai_move = ai_move.slice(0, 2) + "-" + ai_move.slice(2);
