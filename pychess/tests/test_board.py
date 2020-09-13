@@ -1,4 +1,5 @@
 import unittest
+
 from pychess.engine import Board
 
 

@@ -1,4 +1,5 @@
 import unittest
+
 import pychess
 from pychess.uci import UCI, UCIQuitException
 

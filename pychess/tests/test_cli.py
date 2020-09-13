@@ -1,6 +1,7 @@
 import unittest
 
 from chess.engine import SimpleEngine
+
 import pychess
 
 
