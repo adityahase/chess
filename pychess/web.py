@@ -8,12 +8,14 @@ app = Flask(__name__)
 
 STOCKFISH = "stockfish"
 
+
 @app.route("/", methods=["GET"])
 def index():
     return render_template("index.html")
 
+
 @app.route("/play", methods=["POST"])
-def play(): 
+def play():
     data = request.get_json(force=True)
     engine = SimpleEngine.popen_uci(STOCKFISH)
     board = chess.Board(data["fen"])
